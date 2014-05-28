@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="com.android.toolchain.gcc.1731865976">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.android.toolchain.gcc.1731865976" moduleId="org.eclipse.cdt.core.settings" name="Default">
+				<externalSettings>
+					<externalSetting/>
+				</externalSettings>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="com.android.toolchain.gcc.1731865976" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="com.android.toolchain.gcc.1731865976.310021700" name="/" resourcePath="">
+						<toolChain id="com.android.toolchain.gcc.399212275" name="com.android.toolchain.gcc" superClass="com.android.toolchain.gcc">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="com.android.targetPlatform.1349814114" isAbstract="false" superClass="com.android.targetPlatform"/>
+							<builder id="com.android.builder.1298424565" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Android Builder" superClass="com.android.builder"/>
+							<tool id="com.android.gcc.compiler.243416095" name="Android GCC Compiler" superClass="com.android.gcc.compiler">
+								<option id="com.android.gcc.option.includePath.42397453" superClass="com.android.gcc.option.includePath" valueType="includePath">
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/sources/android/native_app_glue"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/sources/cxx-stl/system/include"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/sources/cxx-stl/stlport/stlport"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/sources/cxx-stl/gabi++/include"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.8/include"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/android"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/linux"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/sys"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/arpa"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/EGL"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/GLES"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/GLES2"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/GLES3"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/KHR"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/SLES"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/rs"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/OMXAL"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/mtd"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/machine"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Build"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/RenderSystems/GLES2"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/Components/Overlay"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/Components"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/Components/RTShaderSystem"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/PlugIns/OctreeSceneManager"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/PlugIns/ParticleFX"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/Dependencies/include/zzip"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/Dependencies/include/freetype"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/Dependencies/include/OIS"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/OgreMain/Android"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/OgreMain/Threading"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/RenderSystems/GLES"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/RenderSystems/GLES2/EGL/Android"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/RenderSystems/GLES2/EGL"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/OgreMain/FlashCC"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/RenderSystems/GLES/EGL"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/RenderSystems/GLES/EGL/Android"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/RenderSystems/GLES/EGL/X11"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/OgreMain/GLX"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/OgreMain/NaCl"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/OgreMain/iOS"/>
+									<listOptionValue builtIn="false" value="/home/victor/eclipse/include/Ogre/include/OgreMain"/>
+								</option>
+								<inputType id="com.android.gcc.inputType.682451602" superClass="com.android.gcc.inputType"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="OgreMain"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="jni"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="NativeActivity.null.1416422781" name="NativeActivity"/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="com.android.toolchain.gcc.1731865976;com.android.toolchain.gcc.1731865976.310021700;com.android.gcc.compiler.243416095;com.android.gcc.inputType.682451602">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.android.AndroidPerProjectProfile"/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/NativeActivity"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+</cproject>
