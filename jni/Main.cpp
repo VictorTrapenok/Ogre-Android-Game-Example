@@ -39,7 +39,23 @@ static Ogre::SceneManager* gSceneMgr = NULL;
 static Ogre::ShaderGeneratorTechniqueResolverListener* gMatListener = NULL;
 static Ogre::StaticPluginLoader* gStaticPluginLoader = NULL;
 
+class AppState{
+	public:
+	int CurentState;
+};
 
+class NativeApp{
+
+	public:
+		struct android_app* app;
+
+		ASensorManager* sensorManager;
+		ASensorEventQueue* sensorEventQueue;
+
+		AppState state;
+};
+
+NativeApp app;
 
 static Ogre::DataStreamPtr openAPKFile(const Ogre::String& fileName)
 {
@@ -60,12 +76,13 @@ static Ogre::DataStreamPtr openAPKFile(const Ogre::String& fileName)
 Ogre::Camera* camera = NULL;
 Ogre::SceneNode* pNode = NULL;
 
+
 /**
  * Загрузка ресурсов
  */
+Ogre::ConfigFile cf;
 static void loadResources(const char *name)
 {
-	Ogre::ConfigFile cf;
 	cf.load(openAPKFile(name));
 
 	Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
@@ -83,12 +100,44 @@ static void loadResources(const char *name)
 			Ogre::ResourceGroupManager::getSingleton().addResourceLocation(arch, type, sec);
 		}
 	}
-
-	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseAllResourceGroups();
 }
 
-static void setupScene()
+
+static void InitGameScene()
 {
+	if(app.state.CurentState != 1)
+	{
+		return;
+	}
+
+	LOGW("loadResources resources.cfg");
+	//loadResources("resources.cfg");
+
+	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup("General");
+
+	/**
+	 * Инициализация сцены
+	 */
+	Ogre::Entity* pEntity = gSceneMgr->createEntity("SinbadInstance", "Sinbad.mesh");
+	Ogre::SceneNode* pNode = gSceneMgr->getRootSceneNode()->createChildSceneNode();
+	pNode->attachObject(pEntity);
+
+	Ogre::Light* pDirLight = gSceneMgr->createLight();
+	pDirLight->setDirection(Ogre::Vector3(0,-1,0));
+	pDirLight->setType(Ogre::Light::LT_DIRECTIONAL);
+	pNode->attachObject(pDirLight);
+
+
+	app.state.CurentState = 2;
+}
+
+static void InitStartScene()
+{
+	if(app.state.CurentState > 0)
+	{
+		return;
+	}
+
 	Ogre::RTShader::ShaderGenerator::initialize();
 	Ogre::RTShader::ShaderGenerator::getSingletonPtr()->setTargetLanguage("glsles");
 	gMatListener = new Ogre::ShaderGeneratorTechniqueResolverListener();
@@ -106,7 +155,7 @@ static void setupScene()
 	camera->setAutoAspectRatio(true);
 
 	Ogre::Viewport* vp = gRenderWnd->addViewport(camera);
-	vp->setBackgroundColour(Ogre::ColourValue(0.90f,0.99f,0.0f));
+	vp->setBackgroundColour(Ogre::ColourValue(1.0f, 1.0f, 1.0f));
 	vp->setMaterialScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
 	/**
@@ -120,79 +169,50 @@ static void setupScene()
 	LOGW("Create overlayManager");
 	Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
 
-
 	loadResources("resources.cfg");
+	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup("Start");
 
-	/**
-	 * Инициализация сцены
-	 */
-	Ogre::Entity* pEntity = gSceneMgr->createEntity("SinbadInstance", "Sinbad.mesh");
-	Ogre::SceneNode* pNode = gSceneMgr->getRootSceneNode()->createChildSceneNode();
-	pNode->attachObject(pEntity);
+		 LOGW("Create a img overlay panel");
+		 Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelLogo" ) );
+		 panel->setPosition( vp->getActualWidth()/2 - 64, vp->getActualHeight()/2 - 64 - 20 );
+		 panel->setDimensions( 128, 64 );
+		 panel->setMaterialName("overlay_image_material");
+		 panel->setMetricsMode(Ogre::GMM_PIXELS);
 
-	Ogre::Light* pDirLight = gSceneMgr->createLight();
-	pDirLight->setDirection(Ogre::Vector3(0,-1,0));
-	pDirLight->setType(Ogre::Light::LT_DIRECTIONAL);
-	pNode->attachObject(pDirLight);
-
-	Ogre::RTShader::ShaderGenerator::getSingletonPtr()->invalidateScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+		 Ogre::Overlay* LogoOverlay = overlayManager.create( "OverlayLogo" );
+		 LogoOverlay->add2D( panel );
+		 LogoOverlay->show();
 
 
-	 LOGW("Create overlay");
-	 Ogre::Overlay* overlay = overlayManager.create( "OverlayName" );
+		 LOGW("Create a text overlay panel");
+		 Ogre::TextAreaOverlayElement* textArea = static_cast<Ogre::TextAreaOverlayElement*>(overlayManager.createOverlayElement("TextArea", "TextAreaName"));
+		 textArea->setMetricsMode(Ogre::GMM_PIXELS);
+		 textArea->setPosition(0, 0);
+		 textArea->setDimensions(100, 100);
+		 textArea->setCaption("Hello, World!");
+		 textArea->setCharHeight(48);
+		 textArea->setFontName("QWcuckoo");
+		 textArea->setColourBottom(Ogre::ColourValue(0.0f, 0.0f, 1.0f));
+		 textArea->setColourTop(Ogre::ColourValue(1.0f, 0.0f, 0.0f));
 
-	 LOGW("Create a panel");
-	 Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName" ) );
+		 Ogre::OverlayContainer* TextPanel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelText" ) );
+		 TextPanel->setPosition( vp->getActualWidth()/2 - 128, vp->getActualHeight()/2 + 20 );
+		 TextPanel->setDimensions( 256, 64 );
+		 TextPanel->setMaterialName("overlay_text_material");
+		 TextPanel->setMetricsMode(Ogre::GMM_PIXELS);
+		 TextPanel->addChild(textArea);
 
-	 LOGW("panel->setPosition");
-	 panel->setPosition( 0.0, 0.0 );
-	 panel->setDimensions( 300, 50 );
+		 Ogre::Overlay* TextOverlay = overlayManager.create( "OverlayText" );
+		 TextOverlay->add2D( TextPanel );
+		 TextOverlay->show();
 
-	 LOGW("panel->setMaterialName");
-	 panel->setMaterialName("overlay_image_material");
-	 panel->setMetricsMode(Ogre::GMM_PIXELS);
+		 app.state.CurentState = 1;
 
-	 // Add the panel to the overlay
-	 LOGW("overlay->add2D( panel )");
-	 overlay->add2D( panel );
+		 //loadResources("resources.cfg");
+		 //Ogre::ResourceGroupManager::getSingletonPtr()->initialiseAllResourceGroups();
 
-
-	 LOGW("Create TextAreaOverlayElement");
-	 // Create a text area
-	 Ogre::TextAreaOverlayElement* textArea = static_cast<Ogre::TextAreaOverlayElement*>(overlayManager.createOverlayElement("TextArea", "TextAreaName"));
-	 textArea->setMetricsMode(Ogre::GMM_PIXELS);
-	 textArea->setPosition(0, 0);
-	 textArea->setDimensions(100, 100);
-	 textArea->setCaption("Hello, World!");
-	 textArea->setCharHeight(16);
-	 textArea->setFontName("QWcuckoo");
-	 textArea->setColourBottom(Ogre::ColourValue(0.3, 0.5, 0.3));
-	 textArea->setColourTop(Ogre::ColourValue(0.5, 0.7, 0.5));
-
-	 LOGW("addChild Element");
-	 panel->addChild(textArea);
-
-	 LOGW("Show the overlay");
-	 // Show the overlay
-	 overlay->show();
-
-
+		 Ogre::RTShader::ShaderGenerator::getSingletonPtr()->invalidateScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 }
-
-class AppState{
-	public:
-};
-
-class NativeApp{
-
-	public:
-		struct android_app* app;
-
-		ASensorManager* sensorManager;
-		ASensorEventQueue* sensorEventQueue;
-
-		AppState state;
-};
 
 Ogre::Vector3 CameraRot;
 Ogre::Vector3 lastPos;
@@ -256,7 +276,7 @@ static void handleCmd(struct android_app* app, int32_t cmd)
                            
 					gRenderWnd = gRoot->createRenderWindow("OgreWindow", 0, 0, false, &opt); 
 		
-					setupScene();
+					InitStartScene();
                 }
                 else
                 {
@@ -281,16 +301,12 @@ static void handleCmd(struct android_app* app, int32_t cmd)
 
 void android_main(struct android_app* state)
 {
-	NativeApp app;
     app_dummy();
-
 	state->userData = &app;
 
 	// Prepare to monitor accelerometer
 	app.sensorManager = ASensorManager_getInstance();
 	app.sensorEventQueue = ASensorManager_createEventQueue(app.sensorManager, state->looper, LOOPER_ID_USER, NULL, NULL);
-
-
 
 	if (state->savedState != NULL)
 	{
@@ -335,6 +351,9 @@ void android_main(struct android_app* state)
 		{
 			gRenderWnd->windowMovedOrResized();
 			gRoot->renderOneFrame();
+
+			InitGameScene();
+
 		}
     }
 }
