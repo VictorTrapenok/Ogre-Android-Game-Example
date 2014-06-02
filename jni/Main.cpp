@@ -14,16 +14,20 @@
 
 
 
-#include "OgreMain/Ogre.h"
-#include "OgreMain/OgreRenderWindow.h"
-#include "OgreMain/OgreStringConverter.h"
+#include "Ogre.h"
+#include "OgreRenderWindow.h"
+#include "OgreStringConverter.h"
 #include "RTShaderHelper.h"
-#include "RenderSystems/GLES2/EGL/Android/OgreAndroidEGLWindow.h"
-#include "OgreMain/Android/OgreAPKFileSystemArchive.h"
-#include "OgreMain/Android/OgreAPKZipArchive.h"
+#include "OgreAndroidEGLWindow.h"
+#include "OgreAPKFileSystemArchive.h"
+#include "OgreAPKZipArchive.h"
 
+#include "OgreOverlayManager.h"
+#include "OgreOverlayContainer.h"
+#include "OgreTextAreaOverlayElement.h"
+#include "OgreOverlaySystem.h"
 
-#include "Build/OgreStaticPluginLoader.h"
+#include "include/Build/OgreStaticPluginLoader.h"
 
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "", __VA_ARGS__))
@@ -34,6 +38,8 @@ static AAssetManager* gAssetMgr = NULL;
 static Ogre::SceneManager* gSceneMgr = NULL;
 static Ogre::ShaderGeneratorTechniqueResolverListener* gMatListener = NULL;
 static Ogre::StaticPluginLoader* gStaticPluginLoader = NULL;
+
+
 
 static Ogre::DataStreamPtr openAPKFile(const Ogre::String& fileName)
 {
@@ -54,11 +60,14 @@ static Ogre::DataStreamPtr openAPKFile(const Ogre::String& fileName)
 Ogre::Camera* camera = NULL;
 Ogre::SceneNode* pNode = NULL;
 
-static void setupScene()
+/**
+ * Загрузка ресурсов
+ */
+static void loadResources(const char *name)
 {
 	Ogre::ConfigFile cf;
-    cf.load(openAPKFile("resources.cfg"));
-	
+	cf.load(openAPKFile(name));
+
 	Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
 	while (seci.hasMoreElements())
 	{
@@ -75,18 +84,48 @@ static void setupScene()
 		}
 	}
 
-	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup(Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseAllResourceGroups();
+}
 
+static void setupScene()
+{
 	Ogre::RTShader::ShaderGenerator::initialize();
 	Ogre::RTShader::ShaderGenerator::getSingletonPtr()->setTargetLanguage("glsles");
 	gMatListener = new Ogre::ShaderGeneratorTechniqueResolverListener();
 	Ogre::MaterialManager::getSingleton().addListener(gMatListener);
-	
+
+	LOGW("Create SceneManager");
 	gSceneMgr = gRoot->createSceneManager(Ogre::ST_GENERIC);
 	Ogre::RTShader::ShaderGenerator::getSingletonPtr()->addSceneManager(gSceneMgr);
-		
+
 	camera = gSceneMgr->createCamera("MyCam");
-	
+	camera->setNearClipDistance(1.0f);
+	camera->setFarClipDistance(100000.0f);
+	camera->setPosition(0,0,20.0f);
+	camera->lookAt(0,0,0);
+	camera->setAutoAspectRatio(true);
+
+	Ogre::Viewport* vp = gRenderWnd->addViewport(camera);
+	vp->setBackgroundColour(Ogre::ColourValue(0.90f,0.99f,0.0f));
+	vp->setMaterialScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+
+	/**
+	 * http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Creating+Overlays+via+Code
+	 * http://www.ogre3d.org/forums/viewtopic.php?f=2&t=78278#p492027
+	 */
+	LOGW("Create OverlaySystem");
+	Ogre::OverlaySystem *mOverlaySystem = OGRE_NEW Ogre::OverlaySystem();
+	gSceneMgr->addRenderQueueListener(mOverlaySystem);
+
+	LOGW("Create overlayManager");
+	Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
+
+
+	loadResources("resources.cfg");
+
+	/**
+	 * Инициализация сцены
+	 */
 	Ogre::Entity* pEntity = gSceneMgr->createEntity("SinbadInstance", "Sinbad.mesh");
 	Ogre::SceneNode* pNode = gSceneMgr->getRootSceneNode()->createChildSceneNode();
 	pNode->attachObject(pEntity);
@@ -96,17 +135,48 @@ static void setupScene()
 	pDirLight->setType(Ogre::Light::LT_DIRECTIONAL);
 	pNode->attachObject(pDirLight);
 
-	camera->setNearClipDistance(1.0f);
-	camera->setFarClipDistance(100000.0f);
-	camera->setPosition(0,0,20.0f);
-	camera->lookAt(0,0,0);
-	camera->setAutoAspectRatio(true);
-
-	Ogre::Viewport* vp = gRenderWnd->addViewport(camera);
-	vp->setBackgroundColour(Ogre::ColourValue(0.90f,0.99f,0.0f));
-	vp->setMaterialScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);	
-
 	Ogre::RTShader::ShaderGenerator::getSingletonPtr()->invalidateScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+
+
+	 LOGW("Create overlay");
+	 Ogre::Overlay* overlay = overlayManager.create( "OverlayName" );
+
+	 LOGW("Create a panel");
+	 Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName" ) );
+
+	 LOGW("panel->setPosition");
+	 panel->setPosition( 0.0, 0.0 );
+	 panel->setDimensions( 300, 50 );
+
+	 LOGW("panel->setMaterialName");
+	 panel->setMaterialName("overlay_image_material");
+	 panel->setMetricsMode(Ogre::GMM_PIXELS);
+
+	 // Add the panel to the overlay
+	 LOGW("overlay->add2D( panel )");
+	 overlay->add2D( panel );
+
+
+	 LOGW("Create TextAreaOverlayElement");
+	 // Create a text area
+	 Ogre::TextAreaOverlayElement* textArea = static_cast<Ogre::TextAreaOverlayElement*>(overlayManager.createOverlayElement("TextArea", "TextAreaName"));
+	 textArea->setMetricsMode(Ogre::GMM_PIXELS);
+	 textArea->setPosition(0, 0);
+	 textArea->setDimensions(100, 100);
+	 textArea->setCaption("Hello, World!");
+	 textArea->setCharHeight(16);
+	 textArea->setFontName("QWcuckoo");
+	 textArea->setColourBottom(Ogre::ColourValue(0.3, 0.5, 0.3));
+	 textArea->setColourTop(Ogre::ColourValue(0.5, 0.7, 0.5));
+
+	 LOGW("addChild Element");
+	 panel->addChild(textArea);
+
+	 LOGW("Show the overlay");
+	 // Show the overlay
+	 overlay->show();
+
+
 }
 
 class AppState{
@@ -119,16 +189,7 @@ class NativeApp{
 		struct android_app* app;
 
 		ASensorManager* sensorManager;
-		const ASensor* accelerometerSensor;
-		const ASensor* gyroscopeSensor;
 		ASensorEventQueue* sensorEventQueue;
-
-		int animating;
-		EGLDisplay display;
-		EGLSurface surface;
-		EGLContext context;
-		int32_t width;
-		int32_t height;
 
 		AppState state;
 };
@@ -148,7 +209,7 @@ static int32_t handleInput(struct android_app* app, AInputEvent* event)
 	        	CameraRot.x += (x - lastPos.x) * 0.01;
 	        }
 
-	        if( abs(y - lastPos.y) < 25)
+	        if( abs(y - lastPos.y)< 25)
 	        {
 	        	CameraRot.y += (y - lastPos.y) * 0.01;
 	        }
@@ -158,6 +219,13 @@ static int32_t handleInput(struct android_app* app, AInputEvent* event)
 
 	        lastPos.x = x;
 	        lastPos.y = y;
+
+	        char text[300];
+	        sprintf(text, "X:%.2f Y:%.2f", x, y);
+
+	        //textArea->setCaption( text );
+
+
 	        return 1;
 	    }
 	return 0;
@@ -220,8 +288,6 @@ void android_main(struct android_app* state)
 
 	// Prepare to monitor accelerometer
 	app.sensorManager = ASensorManager_getInstance();
-	app.accelerometerSensor = ASensorManager_getDefaultSensor(app.sensorManager, ASENSOR_TYPE_ACCELEROMETER);
-	app.gyroscopeSensor = ASensorManager_getDefaultSensor(app.sensorManager, ASENSOR_TYPE_GYROSCOPE);
 	app.sensorEventQueue = ASensorManager_createEventQueue(app.sensorManager, state->looper, LOOPER_ID_USER, NULL, NULL);
 
 
@@ -259,34 +325,6 @@ void android_main(struct android_app* state)
             	source->process(state, source);
             }
             
-            // If a sensor has data, process it now.
-			if (ident == LOOPER_ID_USER || 1)
-			{
-				if (app.accelerometerSensor != NULL || app.gyroscopeSensor != NULL)
-				{
-					ASensorEvent event;
-					while (ASensorEventQueue_getEvents(app.sensorEventQueue,&event, 1) > 0)
-					{
-						LOGW("accelerometer: x=%f y=%f z=%f", event.acceleration.x, event.acceleration.y, event.acceleration.z);
-
-						Ogre::Vector3 pos = pNode->getPosition();
-
-						float x = cos(pos.x + event.acceleration.x)*10;;
-						float y = sin(pos.y + event.acceleration.y)*10;
-
-						//pNode->setPosition(x, y, 1);
-					}
-				}
-				else
-				{
-					LOGW("accelerometer && gyroscope = NULL");
-				}
-			}
-			else
-			{
-				LOGW("ident %d", ident );
-			}
-
             if (state->destroyRequested != 0)
             {
             	return;

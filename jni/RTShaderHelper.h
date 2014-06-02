@@ -2,8 +2,8 @@
 
 #ifdef RTSHADER_SYSTEM_BUILD_CORE_SHADERS
 
-#include "OgreMain/Ogre.h"
-#include "Components/RTShaderSystem/OgreRTShaderSystem.h"
+#include "Ogre.h"
+#include "OgreRTShaderSystem.h"
 
 namespace Ogre
 {
