@@ -39,6 +39,8 @@ static Ogre::SceneManager* gSceneMgr = NULL;
 static Ogre::ShaderGeneratorTechniqueResolverListener* gMatListener = NULL;
 static Ogre::StaticPluginLoader* gStaticPluginLoader = NULL;
 
+
+
 class AppState{
 	public:
 	int CurentState;
@@ -75,7 +77,9 @@ static Ogre::DataStreamPtr openAPKFile(const Ogre::String& fileName)
 		
 Ogre::Camera* camera = NULL;
 Ogre::SceneNode* pNode = NULL;
-
+Ogre::RaySceneQuery* mRayScnQuery = NULL;
+Ogre::TextAreaOverlayElement* textArea = NULL;
+Ogre::Viewport* vp = NULL;
 
 /**
  * Загрузка ресурсов
@@ -110,9 +114,7 @@ static void InitGameScene()
 		return;
 	}
 
-	LOGW("loadResources resources.cfg");
-	//loadResources("resources.cfg");
-
+	Ogre::RTShader::ShaderGenerator::getSingletonPtr()->invalidateScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup("General");
 
 	/**
@@ -127,6 +129,7 @@ static void InitGameScene()
 	pDirLight->setType(Ogre::Light::LT_DIRECTIONAL);
 	pNode->attachObject(pDirLight);
 
+	mRayScnQuery = gSceneMgr->createRayQuery(Ogre::Ray());
 
 	app.state.CurentState = 2;
 }
@@ -154,7 +157,7 @@ static void InitStartScene()
 	camera->lookAt(0,0,0);
 	camera->setAutoAspectRatio(true);
 
-	Ogre::Viewport* vp = gRenderWnd->addViewport(camera);
+	vp = gRenderWnd->addViewport(camera);
 	vp->setBackgroundColour(Ogre::ColourValue(1.0f, 1.0f, 1.0f));
 	vp->setMaterialScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 
@@ -172,57 +175,54 @@ static void InitStartScene()
 	loadResources("resources.cfg");
 	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup("Start");
 
-		 LOGW("Create a img overlay panel");
-		 Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelLogo" ) );
-		 panel->setPosition( vp->getActualWidth()/2 - 64, vp->getActualHeight()/2 - 64 - 20 );
-		 panel->setDimensions( 128, 64 );
-		 panel->setMaterialName("overlay_image_material");
-		 panel->setMetricsMode(Ogre::GMM_PIXELS);
+	LOGW("Create a img overlay panel");
+	Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelLogo" ) );
+	panel->setPosition( vp->getActualWidth()/2 - 64, vp->getActualHeight()/2 - 64 - 20 );
+	panel->setDimensions( 128, 64 );
+	panel->setMaterialName("overlay_image_material");
+	panel->setMetricsMode(Ogre::GMM_PIXELS);
 
-		 Ogre::Overlay* LogoOverlay = overlayManager.create( "OverlayLogo" );
-		 LogoOverlay->add2D( panel );
-		 LogoOverlay->show();
+	Ogre::Overlay* LogoOverlay = overlayManager.create( "OverlayLogo" );
+	LogoOverlay->add2D( panel );
+	LogoOverlay->show();
 
 
-		 LOGW("Create a text overlay panel");
-		 Ogre::TextAreaOverlayElement* textArea = static_cast<Ogre::TextAreaOverlayElement*>(overlayManager.createOverlayElement("TextArea", "TextAreaName"));
-		 textArea->setMetricsMode(Ogre::GMM_PIXELS);
-		 textArea->setPosition(0, 0);
-		 textArea->setDimensions(100, 100);
-		 textArea->setCaption("Hello, World!");
-		 textArea->setCharHeight(48);
-		 textArea->setFontName("QWcuckoo");
-		 textArea->setColourBottom(Ogre::ColourValue(0.0f, 0.0f, 1.0f));
-		 textArea->setColourTop(Ogre::ColourValue(1.0f, 0.0f, 0.0f));
+	LOGW("Create a text overlay panel");
+	textArea = static_cast<Ogre::TextAreaOverlayElement*>(overlayManager.createOverlayElement("TextArea", "TextAreaName"));
+	textArea->setMetricsMode(Ogre::GMM_PIXELS);
+	textArea->setPosition(0, 0);
+	textArea->setDimensions(100, 100);
+	textArea->setCaption("Hello, World!");
+	textArea->setCharHeight(48);
+	textArea->setFontName("QWcuckoo");
+	textArea->setColourBottom(Ogre::ColourValue(0.0f, 0.0f, 1.0f));
+	textArea->setColourTop(Ogre::ColourValue(1.0f, 0.0f, 0.0f));
 
-		 Ogre::OverlayContainer* TextPanel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelText" ) );
-		 TextPanel->setPosition( vp->getActualWidth()/2 - 128, vp->getActualHeight()/2 + 20 );
-		 TextPanel->setDimensions( 256, 64 );
-		 TextPanel->setMaterialName("overlay_text_material");
-		 TextPanel->setMetricsMode(Ogre::GMM_PIXELS);
-		 TextPanel->addChild(textArea);
+	Ogre::OverlayContainer* TextPanel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelText" ) );
+	TextPanel->setPosition( vp->getActualWidth()/2 - 128, vp->getActualHeight()/2 + 20 );
+	TextPanel->setDimensions( 256, 64 );
+	TextPanel->setMaterialName("overlay_text_material");
+	TextPanel->setMetricsMode(Ogre::GMM_PIXELS);
+	TextPanel->addChild(textArea);
 
-		 Ogre::Overlay* TextOverlay = overlayManager.create( "OverlayText" );
-		 TextOverlay->add2D( TextPanel );
-		 TextOverlay->show();
+	Ogre::Overlay* TextOverlay = overlayManager.create( "OverlayText" );
+	TextOverlay->add2D( TextPanel );
+	TextOverlay->show();
 
-		 app.state.CurentState = 1;
+	app.state.CurentState = 1;
 
-		 //loadResources("resources.cfg");
-		 //Ogre::ResourceGroupManager::getSingletonPtr()->initialiseAllResourceGroups();
-
-		 Ogre::RTShader::ShaderGenerator::getSingletonPtr()->invalidateScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 }
 
 Ogre::Vector3 CameraRot;
 Ogre::Vector3 lastPos;
 static int32_t handleInput(struct android_app* app, AInputEvent* event)
 {
-	    if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
+	    if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION)
+	    {
 	        float x = AMotionEvent_getX(event, 0);
 	        float y = AMotionEvent_getY(event, 0);
 
-	        LOGW("MOTION: x=%f y=%f", x, y);
+	        LOGW("MOTION: x=%d y=%d", (int)x, (int)y);
 
 	        if( abs(x - lastPos.x) < 25)
 	        {
@@ -240,10 +240,34 @@ static int32_t handleInput(struct android_app* app, AInputEvent* event)
 	        lastPos.x = x;
 	        lastPos.y = y;
 
-	        char text[300];
-	        sprintf(text, "X:%.2f Y:%.2f", x, y);
 
-	        //textArea->setCaption( text );
+	        if(textArea != NULL)
+	        {
+				char text[300];
+				sprintf(text, "X:%d Y:%d", (int)x, (int)y);
+				textArea->setCaption( text );
+	        }
+
+	            /*
+	        	This next big chunk basically sends a raycast straight down from the camera's position
+	        	It then checks to see if it is under world geometry and if it is we move the camera back up
+	        	*/
+	        	//Ogre::Vector3 camPos = camera->getPosition();
+	        	//Ogre::Ray cameraRay(Ogre::Vector3(camPos.x, 5000.0f, camPos.z), Ogre::Vector3::NEGATIVE_UNIT_Y);
+        	    //mRayScnQuery->setRay(cameraRay);
+
+	        	//create a raycast straight out from the camera at the mouse's location
+				Ogre::Ray mouseRay = camera->getCameraToViewportRay( x/float(vp->getActualWidth()),  y/float(vp->getActualHeight()));
+				mRayScnQuery->setRay(mouseRay);
+
+	        	Ogre::RaySceneQueryResult& result = mRayScnQuery->execute();
+	        	Ogre::RaySceneQueryResult::iterator iter = result.begin();
+
+	        	if(iter != result.end() && iter->movable)
+	        	{
+	        		LOGW("SELECT: %s", iter->movable->getName().c_str());
+	        	}
+	        	return true;
 
 
 	        return 1;
